@@ -1,8 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Reflection.Metadata;
-using Users;
+using Entities;
 
 public partial class XmlSportsContext : DbContext
 {

@@ -1,7 +1,6 @@
-namespace Users
+namespace Entities
 {
     using System.ComponentModel.DataAnnotations.Schema;
-    using System.ComponentModel.DataAnnotations;
     using System.Xml.Serialization;
 
     [XmlRoot("XmlSports")]

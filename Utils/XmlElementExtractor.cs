@@ -1,6 +1,6 @@
 using System.Xml.Linq;
 using System.Xml.Serialization;
-using Users;
+using Entities;
 
 namespace XmlUtil
 {
