@@ -14,15 +14,16 @@ builder.Services.AddDbContext<XmlSportsContext>(
     options => options.UseSqlServer(builder.Configuration.GetConnectionString("ConnectionString"))
 );
 
+var options = new DbContextOptionsBuilder<XmlSportsContext>() // See if you can declare this at the top
+    .UseSqlServer(builder.Configuration.GetConnectionString("ConnectionString"))
+    .Options;
+
 var app = builder.Build();
 
 var timer = new System.Timers.Timer(6000);
 
 Action fether = async () =>
 {
-    var options = new DbContextOptionsBuilder<XmlSportsContext>() // See if you can declare this at the top
-        .UseSqlServer(builder.Configuration.GetConnectionString("ConnectionString"))
-        .Options;
     var context = new XmlSportsContext(options);
 
     WebResponse data = WebRequest.Create(dataUrl).GetResponse();
@@ -33,110 +34,109 @@ Action fether = async () =>
 
     XmlSerializer serializer = new XmlSerializer(typeof(XmlSports));
 
-    using (StringReader reader = new StringReader(responseText))
+    StringReader reader = new StringReader(responseText);
+
+    XmlSports newData = (XmlSports)serializer.Deserialize(reader);
+
+    XDocument doc = XDocument.Parse(responseText);
+
+    XmlElementExtractor xmlExtractor = new XmlElementExtractor(doc);
+
+    Sport[] sport = xmlExtractor.GetSports;
+
+    Event[] events = xmlExtractor.GetEvents;
+
+    Match[] match = xmlExtractor.GetMatches;
+
+    Bet[] bets = xmlExtractor.GetBets;
+
+    Odd[] odds = xmlExtractor.GetOdds;
+
+    if (context.Sports.FirstOrDefault() == null)
     {
-        XmlSports newData = (XmlSports)serializer.Deserialize(reader);
+        context.Add(newData.Sport);
+        context.SaveChanges();
+    }
+    else
+    {
+        var eventsInUrlButNotInDB = events
+            .ToList()
+            .ExceptBy(context.Events.ToList().Select(x => x.ID), x => x.ID);
+        var matchesInUrlButNotInDB = match
+            .ToList()
+            .ExceptBy(context.Matches.ToList().Select(x => x.ID), x => x.ID);
+        var betsInUrlButNotInDB = bets.ToList()
+            .ExceptBy(context.Bets.ToList().Select(x => x.ID), x => x.ID);
+        var oddsInUrlButNotInDB = odds.ToList()
+            .ExceptBy(context.Odds.ToList().Select(x => x.ID), x => x.ID);
 
-        XDocument doc = XDocument.Parse(responseText);
+        var eventsInDbButNotInURL = context.Events
+            .ToList()
+            .ExceptBy(events.ToList().Select(x => x.ID), x => x.ID);
+        var matchesInDbButNotInURL = context.Matches
+            .ToList()
+            .ExceptBy(match.ToList().Select(x => x.ID), x => x.ID);
+        var betsInDbButNotInURL = context.Bets
+            .ToList()
+            .ExceptBy(bets.ToList().Select(x => x.ID), x => x.ID);
+        var oddsInDbButNotInURL = context.Odds
+            .ToList()
+            .ExceptBy(odds.ToList().Select(x => x.ID), x => x.ID);
 
-        XmlElementExtractor xmlExtractor = new XmlElementExtractor(doc);
-
-        var sport = xmlExtractor.GetSports;
-
-        var events = xmlExtractor.GetEvents;
-
-        var match = xmlExtractor.GetMatches;
-
-        var bets = xmlExtractor.GetBets;
-
-        var odds = xmlExtractor.GetOdds;
-
-        if (context.Sports.FirstOrDefault() == null)
+        //Update
+        foreach (var item in eventsInUrlButNotInDB)
         {
-            context.Add(newData.Sport);
-            context.SaveChanges();
+            if (events.Where(x => x.ID == item.ID).First() != null)
+            {
+                context.Events.Add(events.Where(x => x.ID == item.ID).First());
+            }
         }
-        else
+        foreach (var item in matchesInUrlButNotInDB)
         {
-            var eventsInUrlButNotInDB = events
-                .ToList()
-                .ExceptBy(context.Events.ToList().Select(x => x.ID), x => x.ID);
-            var matchesInUrlButNotInDB = match
-                .ToList()
-                .ExceptBy(context.Matches.ToList().Select(x => x.ID), x => x.ID);
-            var betsInUrlButNotInDB = bets.ToList()
-                .ExceptBy(context.Bets.ToList().Select(x => x.ID), x => x.ID);
-            var oddsInUrlButNotInDB = odds.ToList()
-                .ExceptBy(context.Odds.ToList().Select(x => x.ID), x => x.ID);
-
-            var eventsInDbButNotInURL = context.Events
-                .ToList()
-                .ExceptBy(events.ToList().Select(x => x.ID), x => x.ID);
-            var matchesInDbButNotInURL = context.Matches
-                .ToList()
-                .ExceptBy(match.ToList().Select(x => x.ID), x => x.ID);
-            var betsInDbButNotInURL = context.Bets
-                .ToList()
-                .ExceptBy(bets.ToList().Select(x => x.ID), x => x.ID);
-            var oddsInDbButNotInURL = context.Odds
-                .ToList()
-                .ExceptBy(odds.ToList().Select(x => x.ID), x => x.ID);
-
-            //Update
-            foreach (var item in eventsInUrlButNotInDB)
+            if (match.Where(x => x.ID == item.ID).First() != null)
             {
-                if (events.Where(x => x.ID == item.ID).First() != null)
-                {
-                    context.Events.Add(events.Where(x => x.ID == item.ID).First());
-                }
+                context.Matches.Add(match.Where(x => x.ID == item.ID).First());
             }
-            foreach (var item in matchesInUrlButNotInDB)
-            {
-                if (match.Where(x => x.ID == item.ID).First() != null)
-                {
-                    context.Matches.Add(match.Where(x => x.ID == item.ID).First());
-                }
-            }
-            foreach (var item in betsInUrlButNotInDB)
-            {
-                if (bets.Where(x => x.ID == item.ID).First() != null)
-                {
-                    context.Bets.Add(bets.Where(x => x.ID == item.ID).First());
-                }
-            }
-            foreach (var item in oddsInUrlButNotInDB)
-            {
-                if (odds.Where(x => x.ID == item.ID).First() != null)
-                {
-                    context.Odds.Add(odds.Where(x => x.ID == item.ID).First());
-                }
-            }
-            ;
-            await context.SaveChangesAsync();
-
-            Console.WriteLine("");
-            Console.WriteLine("Events in URL, but not in DB " + eventsInUrlButNotInDB.Count());
-            Console.WriteLine("Events in DB, but not in URL " + eventsInDbButNotInURL.Count());
-
-            Console.WriteLine("");
-
-            Console.WriteLine("Matches in URL, but not in DB " + matchesInUrlButNotInDB.Count());
-            Console.WriteLine("Matches in DB, but not in URL " + matchesInDbButNotInURL.Count());
-
-            Console.WriteLine("");
-
-            Console.WriteLine("Bets in URL, but not in DB " + betsInUrlButNotInDB.Count());
-            Console.WriteLine("Bets in DB, but not in URL " + betsInDbButNotInURL.Count());
-
-            Console.WriteLine("");
-
-            Console.WriteLine("Odds in URL, but not in DB " + oddsInUrlButNotInDB.Count());
-            Console.WriteLine("Odds in DB, but not in URL " + oddsInDbButNotInURL.Count());
-
-            Console.WriteLine("");
-            Console.WriteLine("////////////////////////////////////");
-            Console.WriteLine("");
         }
+        foreach (var item in betsInUrlButNotInDB)
+        {
+            if (bets.Where(x => x.ID == item.ID).First() != null)
+            {
+                context.Bets.Add(bets.Where(x => x.ID == item.ID).First());
+            }
+        }
+        foreach (var item in oddsInUrlButNotInDB)
+        {
+            if (odds.Where(x => x.ID == item.ID).First() != null)
+            {
+                context.Odds.Add(odds.Where(x => x.ID == item.ID).First());
+            }
+        }
+        ;
+        await context.SaveChangesAsync();
+
+        Console.WriteLine("");
+        Console.WriteLine("Events in URL, but not in DB " + eventsInUrlButNotInDB.Count());
+        Console.WriteLine("Events in DB, but not in URL " + eventsInDbButNotInURL.Count());
+
+        Console.WriteLine("");
+
+        Console.WriteLine("Matches in URL, but not in DB " + matchesInUrlButNotInDB.Count());
+        Console.WriteLine("Matches in DB, but not in URL " + matchesInDbButNotInURL.Count());
+
+        Console.WriteLine("");
+
+        Console.WriteLine("Bets in URL, but not in DB " + betsInUrlButNotInDB.Count());
+        Console.WriteLine("Bets in DB, but not in URL " + betsInDbButNotInURL.Count());
+
+        Console.WriteLine("");
+
+        Console.WriteLine("Odds in URL, but not in DB " + oddsInUrlButNotInDB.Count());
+        Console.WriteLine("Odds in DB, but not in URL " + oddsInDbButNotInURL.Count());
+
+        Console.WriteLine("");
+        Console.WriteLine("////////////////////////////////////");
+        Console.WriteLine("");
     }
 };
 
@@ -148,9 +148,6 @@ app.MapGet(
     "/",
     async () =>
     {
-        var options = new DbContextOptionsBuilder<XmlSportsContext>()
-            .UseSqlServer(builder.Configuration.GetConnectionString("ConnectionString"))
-            .Options;
         var context = new XmlSportsContext(options);
 
         var queriedMatches = context.Matches
@@ -167,9 +164,6 @@ app.MapGet(
     "/search",
     (string matchId) =>
     {
-        var options = new DbContextOptionsBuilder<XmlSportsContext>()
-            .UseSqlServer(builder.Configuration.GetConnectionString("ConnectionString"))
-            .Options;
         var context = new XmlSportsContext(options);
 
         Console.WriteLine("LOL " + matchId);
