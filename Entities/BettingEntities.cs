@@ -1,7 +1,8 @@
-namespace Entities
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Xml.Serialization;
+
+namespace BettingEntities
 {
-    using System.ComponentModel.DataAnnotations.Schema;
-    using System.Xml.Serialization;
 
     [XmlRoot("XmlSports")]
     public class XmlSports

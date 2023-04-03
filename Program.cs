@@ -1,7 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using System.Net;
-using Entities;
+using BettingEntities;
 using XmlUtil;
+using DatabaseMessages;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -53,25 +54,15 @@ Action dataFetch = async () =>
     var oddsInUrlButNotInDB = odds.ToList()
         .ExceptBy(context.Odds.ToList().Select(x => x.ID), x => x.ID);
 
-    var eventsInDbButNotInURL = context.Events
-        .ToList()
-        .ExceptBy(events.ToList().Select(x => x.ID), x => x.ID);
-    var matchesInDbButNotInURL = context.Matches
-        .ToList()
-        .ExceptBy(match.ToList().Select(x => x.ID), x => x.ID);
-    var betsInDbButNotInURL = context.Bets
-        .ToList()
-        .ExceptBy(bets.ToList().Select(x => x.ID), x => x.ID);
-    var oddsInDbButNotInURL = context.Odds
-        .ToList()
-        .ExceptBy(odds.ToList().Select(x => x.ID), x => x.ID);
-
-    Action syncDatabase = async () =>
+    Action updateDatabase = () =>
     {
         foreach (var item in eventsInUrlButNotInDB)
         {
             if (events.Where(x => x.ID == item.ID).First() != null)
             {
+                context.DatabaseMessages.Add(
+                    new DatabaseMessage("Event", true, item.ID, DateTime.Now)
+                );
                 context.Events.Add(events.Where(x => x.ID == item.ID).First());
             }
         }
@@ -79,6 +70,9 @@ Action dataFetch = async () =>
         {
             if (match.Where(x => x.ID == item.ID).First() != null)
             {
+                context.DatabaseMessages.Add(
+                    new DatabaseMessage("Match", true, item.ID, DateTime.Now)
+                );
                 context.Matches.Add(match.Where(x => x.ID == item.ID).First());
             }
         }
@@ -86,6 +80,9 @@ Action dataFetch = async () =>
         {
             if (bets.Where(x => x.ID == item.ID).First() != null)
             {
+                context.DatabaseMessages.Add(
+                    new DatabaseMessage("Bet", true, item.ID, DateTime.Now)
+                );
                 context.Bets.Add(bets.Where(x => x.ID == item.ID).First());
             }
         }
@@ -93,40 +90,25 @@ Action dataFetch = async () =>
         {
             if (odds.Where(x => x.ID == item.ID).First() != null)
             {
+                context.DatabaseMessages.Add(
+                    new DatabaseMessage("Odd", true, item.ID, DateTime.Now)
+                );
                 context.Odds.Add(odds.Where(x => x.ID == item.ID).First());
             }
         }
         ;
-        await context.SaveChangesAsync();
-    };
-
-        Console.WriteLine("");
-        Console.WriteLine("Events in URL, but not in DB " + eventsInUrlButNotInDB.Count());
-
-
-        Console.WriteLine("Matches in URL, but not in DB " + matchesInUrlButNotInDB.Count());
-
-
-        Console.WriteLine("Bets in URL, but not in DB " + betsInUrlButNotInDB.Count());
-
-        Console.WriteLine("Odds in URL, but not in DB " + oddsInUrlButNotInDB.Count());
-
-        Console.WriteLine("");
-
-    Action populateDatabase = async () =>
-    {
-        context.Add(xmlExtractor.GetAllEntities.Sport);
-        await context.SaveChangesAsync();
     };
 
     if (!context.Sports.ToList().Any())
     {
-        populateDatabase();
+        //Seed the database if its empty
+        context.Add(xmlExtractor.GetAllEntities.Sport);
     }
     else
     {
-        syncDatabase();
+        updateDatabase();
     }
+    await context.SaveChangesAsync();
 };
 
 timer.Elapsed += (sender, e) => dataFetch();
@@ -159,6 +141,16 @@ app.MapGet(
         var matchFound = context.Matches.Where(m => m.ID == int.Parse(matchId)).ToList().First();
 
         return matchFound;
+    }
+);
+
+app.MapGet(
+    "/databaseMessages",
+    () =>
+    {
+        var context = new XmlSportsContext(options);
+
+        return context.DatabaseMessages.ToList();
     }
 );
 

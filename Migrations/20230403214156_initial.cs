@@ -1,15 +1,30 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
 namespace Betting.Migrations
 {
     /// <inheritdoc />
-    public partial class Init : Migration
+    public partial class initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.CreateTable(
+                name: "DatabaseMessages",
+                columns: table => new
+                {
+                    EntitiyId = table.Column<int>(type: "int", nullable: false),
+                    Type = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    IsAdded = table.Column<bool>(type: "bit", nullable: false),
+                    TimeOfRecord = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DatabaseMessages", x => x.EntitiyId);
+                });
+
             migrationBuilder.CreateTable(
                 name: "Sports",
                 columns: table => new
@@ -49,7 +64,7 @@ namespace Betting.Migrations
                 {
                     ID = table.Column<int>(type: "int", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    StartDate = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    StartDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     MatchType = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     EventID = table.Column<int>(type: "int", nullable: true)
                 },
@@ -129,6 +144,9 @@ namespace Betting.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "DatabaseMessages");
+
             migrationBuilder.DropTable(
                 name: "Odds");
 

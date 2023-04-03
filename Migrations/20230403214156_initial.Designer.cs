@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Betting.Migrations
 {
     [DbContext(typeof(XmlSportsContext))]
-    [Migration("20230401131423_Init")]
-    partial class Init
+    [Migration("20230403214156_initial")]
+    partial class initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,7 +24,7 @@ namespace Betting.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("Users.Bet", b =>
+            modelBuilder.Entity("BettingEntities.Bet", b =>
                 {
                     b.Property<int>("ID")
                         .HasColumnType("int");
@@ -46,7 +46,7 @@ namespace Betting.Migrations
                     b.ToTable("Bets");
                 });
 
-            modelBuilder.Entity("Users.Event", b =>
+            modelBuilder.Entity("BettingEntities.Event", b =>
                 {
                     b.Property<int>("ID")
                         .HasColumnType("int");
@@ -71,7 +71,7 @@ namespace Betting.Migrations
                     b.ToTable("Events");
                 });
 
-            modelBuilder.Entity("Users.Match", b =>
+            modelBuilder.Entity("BettingEntities.Match", b =>
                 {
                     b.Property<int>("ID")
                         .HasColumnType("int");
@@ -87,9 +87,8 @@ namespace Betting.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("StartDate")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2");
 
                     b.HasKey("ID");
 
@@ -98,7 +97,7 @@ namespace Betting.Migrations
                     b.ToTable("Matches");
                 });
 
-            modelBuilder.Entity("Users.Odd", b =>
+            modelBuilder.Entity("BettingEntities.Odd", b =>
                 {
                     b.Property<int>("ID")
                         .HasColumnType("int");
@@ -123,7 +122,7 @@ namespace Betting.Migrations
                     b.ToTable("Odds");
                 });
 
-            modelBuilder.Entity("Users.Sport", b =>
+            modelBuilder.Entity("BettingEntities.Sport", b =>
                 {
                     b.Property<int>("ID")
                         .HasColumnType("int");
@@ -137,54 +136,74 @@ namespace Betting.Migrations
                     b.ToTable("Sports");
                 });
 
-            modelBuilder.Entity("Users.Bet", b =>
+            modelBuilder.Entity("DatabaseMessages.DatabaseMessage", b =>
                 {
-                    b.HasOne("Users.Match", null)
+                    b.Property<int>("EntitiyId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsAdded")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("TimeOfRecord")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("EntitiyId");
+
+                    b.ToTable("DatabaseMessages");
+                });
+
+            modelBuilder.Entity("BettingEntities.Bet", b =>
+                {
+                    b.HasOne("BettingEntities.Match", null)
                         .WithMany("Bets")
                         .HasForeignKey("MatchID")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("Users.Event", b =>
+            modelBuilder.Entity("BettingEntities.Event", b =>
                 {
-                    b.HasOne("Users.Sport", null)
+                    b.HasOne("BettingEntities.Sport", null)
                         .WithMany("Events")
                         .HasForeignKey("SportID")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("Users.Match", b =>
+            modelBuilder.Entity("BettingEntities.Match", b =>
                 {
-                    b.HasOne("Users.Event", null)
+                    b.HasOne("BettingEntities.Event", null)
                         .WithMany("Matches")
                         .HasForeignKey("EventID")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("Users.Odd", b =>
+            modelBuilder.Entity("BettingEntities.Odd", b =>
                 {
-                    b.HasOne("Users.Bet", null)
+                    b.HasOne("BettingEntities.Bet", null)
                         .WithMany("Odds")
                         .HasForeignKey("BetID")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("Users.Bet", b =>
+            modelBuilder.Entity("BettingEntities.Bet", b =>
                 {
                     b.Navigation("Odds");
                 });
 
-            modelBuilder.Entity("Users.Event", b =>
+            modelBuilder.Entity("BettingEntities.Event", b =>
                 {
                     b.Navigation("Matches");
                 });
 
-            modelBuilder.Entity("Users.Match", b =>
+            modelBuilder.Entity("BettingEntities.Match", b =>
                 {
                     b.Navigation("Bets");
                 });
 
-            modelBuilder.Entity("Users.Sport", b =>
+            modelBuilder.Entity("BettingEntities.Sport", b =>
                 {
                     b.Navigation("Events");
                 });
