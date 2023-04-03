@@ -1,0 +1,71 @@
+# Visual Studio files
+.vs/
+bin/
+obj/
+Debug/
+Release/
+*.user
+*.suo
+*.cache
+*.dll
+*.pdb
+*.log
+*.txt
+*.xml
+.vscode
+
+# NuGet Packages
+packages/
+*.nupkg
+*.snupkg
+*.props
+*.targets
+*.nuget.props
+*.nuget.targets
+
+# Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+build/
+[Bb]in/
+obj/
+[Ll]og/
+
+# .NET Core
+project.lock.json
+project.fragment.lock.json
+artifacts/
+*.sw?
+*.psess
+*.log
+*.VS.*
+*.csproj.user
+
+# Resharper files
+_ReSharper*/
+*.resharper
+
+# Others
+Thumbs.db
+[Tt]est[Rr]esult*/
+*.testsettings
+*.runsettings
+*.vspscc
+*.vssscc
+*.rptproj.user
+*.rptr*
+*.sln.docstates
+*.bak
+*.userosscache
+*.userprefs
+*.tmp
+*.docstates
+*.jfm
+*.pfx
+*.key
+*.cache
+*.db
+*.sdf
+*.mdf
+*.ldf
