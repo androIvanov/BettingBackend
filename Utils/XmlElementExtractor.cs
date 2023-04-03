@@ -1,4 +1,5 @@
 using System.Xml.Linq;
+using System.Xml.Serialization;
 using Users;
 
 namespace XmlUtil
@@ -6,10 +7,24 @@ namespace XmlUtil
     public class XmlElementExtractor
     {
         private XDocument Doc;
+        private XmlSports AllFetchedEntities;
 
-        public XmlElementExtractor(XDocument doc)
+        public XmlElementExtractor(string responseText)
         {
+            XmlSerializer serializer = new XmlSerializer(typeof(XmlSports));
+
+            StringReader reader = new StringReader(responseText);
+
+            XmlSports allFetchedEntities = (XmlSports)serializer.Deserialize(reader);
+
+            XDocument doc = XDocument.Parse(responseText);
+
             this.Doc = doc;
+            this.AllFetchedEntities = allFetchedEntities;
+        }
+        public XmlSports GetAllEntities
+        {
+           get { return this.AllFetchedEntities; }
         }
 
         public Sport[] GetSports

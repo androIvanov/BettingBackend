@@ -20,7 +20,7 @@ var options = new DbContextOptionsBuilder<XmlSportsContext>() // See if you can 
 
 var app = builder.Build();
 
-var timer = new System.Timers.Timer(6000);
+var timer = new System.Timers.Timer(20000);
 
 Action fether = async () =>
 {
@@ -32,15 +32,7 @@ Action fether = async () =>
 
     string responseText = read.ReadToEnd();
 
-    XmlSerializer serializer = new XmlSerializer(typeof(XmlSports));
-
-    StringReader reader = new StringReader(responseText);
-
-    XmlSports newData = (XmlSports)serializer.Deserialize(reader);
-
-    XDocument doc = XDocument.Parse(responseText);
-
-    XmlElementExtractor xmlExtractor = new XmlElementExtractor(doc);
+    XmlElementExtractor xmlExtractor = new XmlElementExtractor(responseText);
 
     Sport[] sport = xmlExtractor.GetSports;
 
@@ -54,8 +46,8 @@ Action fether = async () =>
 
     if (context.Sports.FirstOrDefault() == null)
     {
-        context.Add(newData.Sport);
-        context.SaveChanges();
+        context.Add(xmlExtractor.GetAllEntities.Sport);
+        await context.SaveChangesAsync();
     }
     else
     {
