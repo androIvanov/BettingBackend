@@ -19,7 +19,9 @@ var options = new DbContextOptionsBuilder<XmlSportsContext>() // See if you can 
 
 var app = builder.Build();
 
-var timer = new System.Timers.Timer(9000);
+const int updateInterval = 60000;
+
+var timer = new System.Timers.Timer(updateInterval);
 
 Action dataFetch = async () =>
 {
